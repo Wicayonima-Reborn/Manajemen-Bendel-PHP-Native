@@ -15,7 +15,6 @@ $error = '';
 $nomor_mulai = +1;
 $nomor_akhir = +49;
 
-// Ambil data kantor
 $query_kantor = "SELECT * FROM kantor ORDER BY nama_kantor";
 $result_kantor = mysqli_query($conn, $query_kantor);
 
@@ -41,12 +40,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $tipe_transaksi = $_POST['tipe_transaksi'];
     // $nomor_mulai = mysqli_real_escape_string($conn, $_POST['nomor_mulai']);
     // $nomor_sampai = mysqli_real_escape_string($conn, $_POST['nomor_sampai']);
-    $nama_penyetor = mysqli_real_escape_string($conn, $_POST['nama_penyetor']);
-    $id_kantor_pengirim = (int)$_POST['id_kantor_pengirim'];
-
-    // ambil nomor
     $nomor_mulai = (int)$_POST['nomor_mulai'];
     $nomor_sampai = (int)$_POST['nomor_sampai'];
+    $nama_penyetor = mysqli_real_escape_string($conn, $_POST['nama_penyetor']);
+    $id_kantor_pengirim = (int)$_POST['id_kantor_pengirim'];
     
     // Cek duplikasi no_bendel
     $check_query = "SELECT id FROM bendel WHERE no_bendel = '$no_bendel'";
@@ -87,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tambah Bendel - Aplikasi Bendel</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="./output.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100">
     <!-- Navbar -->
