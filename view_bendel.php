@@ -131,6 +131,7 @@ $result_kantor = mysqli_query($conn, $query_kantor);
                     <a href="view_bendel.php" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded font-semibold">
                         ↻ Reset
                     </a>
+                    <a href="export.php" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded font-semibold">Export ke excel</a>
                 </div>
             </form>
             </form>
