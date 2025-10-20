@@ -1,8 +1,10 @@
 <?php
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASS', '123');
-define('DB_NAME', 'bendel_db');
+$env = parse_ini_file(__DIR__ . '/.env');
+
+define('DB_HOST', $env['DB_HOST']);
+define('DB_USER', $env['DB_USER']);
+define('DB_PASS', $env['DB_PASS']);
+define('DB_NAME', $env['DB_NAME']);
 
 // create koneksi
 $conn = mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME);
