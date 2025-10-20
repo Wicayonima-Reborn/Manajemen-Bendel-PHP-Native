@@ -1,5 +1,5 @@
 <?php
-echo "<h2>🔐 Generate Password Hash</h2>";
+echo "<h2> Generate Password Hash</h2>";
 echo "<hr>";
 $password = "admin12345sandiadmin";
 $hash = password_hash($password, PASSWORD_DEFAULT);
@@ -16,10 +16,11 @@ echo "<li>Username: <strong>siti</strong> | Password: <strong>12345</strong></li
 echo "<li>Username: <strong>andi</strong> | Password: <strong>12345</strong></li>";
 echo "</ul>";
 echo "<hr>";
-echo "<h3>🧪 Test Verify (untuk memastikan):</h3>";
+echo "<h3> Test Verify (untuk memastikan):</h3>";
 if (password_verify("admin12345sandiadmin", $hash)) {
-    echo "<p style='color:green;font-weight:bold'>✅ Hash VALID! Password 'admin12345sandiadmin' akan work!</p>";
+    echo "<p style='color:green;font-weight:bold'> Hash VALID! Password 'admin12345sandiadmin' akan work!</p>";
 } else {
-    echo "<p style='color:red;font-weight:bold'>❌ Ada masalah dengan hash</p>";
+    echo "<p style='color:red;font-weight:bold'> Ada masalah dengan hash</p>";
 }
+
 ?>
