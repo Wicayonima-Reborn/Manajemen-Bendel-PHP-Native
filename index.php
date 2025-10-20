@@ -1,23 +1,4 @@
 <?php
-// Security: Session Configuration
-$secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
-$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-$isLocal = in_array($host, ['localhost', '127.0.0.1']);
-
-$cookieParams = [
-    'lifetime' => 0,
-    'path' => '/',
-    'secure' => $secure,
-    'httponly' => true,
-    'samesite' => 'Lax'
-];
-
-if ($isLocal) {
-    unset($cookieParams['domain']);
-}
-
-session_set_cookie_params($cookieParams);
-// dimulai dari sini
 session_start();
 
 // sudah login, redirect ke dashboard
@@ -30,51 +11,39 @@ require_once 'koneksi.php';
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // proteksi CSRF
-    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
-        $error = 'Invalid request!';
-    } else {
-        $username = trim($_POST['username']);
-        $password = trim($_POST['password']);
+
+    $username = trim($_POST['username']);
+    $password = trim($_POST['password']);
+    
+    // Statement untuk mencegah SQL Injection
+    $stmt = mysqli_prepare($conn, "SELECT * FROM users WHERE username = ?");
+    mysqli_stmt_bind_param($stmt, "s", $username);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    
+    if ($result && mysqli_num_rows($result) == 1) {
+        $user = mysqli_fetch_assoc($result);
         
-        // Prepared Statement untuk mencegah SQL Injection
-        $stmt = mysqli_prepare($conn, "SELECT * FROM users WHERE username = ?");
-        mysqli_stmt_bind_param($stmt, "s", $username);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        
-        if ($result && mysqli_num_rows($result) == 1) {
-            $user = mysqli_fetch_assoc($result);
-            
-            // Verifikasi password
-            if (password_verify($password, $user['password'])) {
-                // Login berhasil regenerate session ID
-                session_regenerate_id(true);
-                
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['nama'] = $user['nama'];
-                $_SESSION['username'] = $user['username'];
-                $_SESSION['role'] = $user['role'];
-                
-                // generate new CSRF token
-                $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-                
-                header('Location: dashboard.php');
-                exit;
-            } else {
-                $error = 'Username atau password salah!';
-            }
+        // Verifikasi password
+        if (password_verify($password, $user['password'])) {
+            // Login berhasil regenerate session ID
+            session_regenerate_id(true);
+
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['nama'] = $user['nama'];
+            $_SESSION['username'] = $user['username'];
+            $_SESSION['role'] = $user['role'];
+
+            header('Location: dashboard.php');
+            exit;
         } else {
             $error = 'Username atau password salah!';
         }
-        
-        mysqli_stmt_close($stmt);
+    } else {
+        $error = 'Username atau password salah!';
     }
-}
 
-// Generate CSRF token for form
-if (empty($_SESSION['csrf_token'])) {
-    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    mysqli_stmt_close($stmt);
 }
 ?>
 <!DOCTYPE html>
@@ -97,8 +66,6 @@ if (empty($_SESSION['csrf_token'])) {
             <?php endif; ?>
             
             <form method="POST" action="">
-                <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
-                
                 <div class="mb-4">
                     <label class="block text-gray-700 text-sm font-bold mb-2">Username</label>
                     <input type="text" name="username" autocomplete="off" required 
