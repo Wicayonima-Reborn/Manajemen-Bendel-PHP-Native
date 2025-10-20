@@ -101,8 +101,7 @@ $result_kantor = mysqli_query($conn, $query_kantor);
                         <label class="block text-gray-700 font-semibold mb-2">Filter Tanggal</label>
                         <input type="date" name="tanggal" value="<?php echo $filter_tanggal; ?>"
                                class="w-full px-3 py-2 border rounded focus:outline-none focus:border-blue-500">
-                    </div>
-                    
+                    </div>          
                     <div>
                         <label class="block text-gray-700 font-semibold mb-2">Filter Kantor</label>
                         <select name="kantor" class="w-full px-3 py-2 border rounded focus:outline-none focus:border-blue-500">
@@ -115,7 +114,6 @@ $result_kantor = mysqli_query($conn, $query_kantor);
                             <?php endwhile; ?>
                         </select>
                     </div>
-                    
                     <div>
                         <label class="block text-gray-700 font-semibold mb-2">Filter Tipe</label>
                         <select name="tipe" class="w-full px-3 py-2 border rounded focus:outline-none focus:border-blue-500">

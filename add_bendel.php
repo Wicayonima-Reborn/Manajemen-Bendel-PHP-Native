@@ -18,10 +18,17 @@ $nomor_akhir = +49;
 $query_kantor = "SELECT * FROM kantor ORDER BY nama_kantor";
 $result_kantor = mysqli_query($conn, $query_kantor);
 
+$query_bendel_terakhir = "SELECT no_bendel FROM bendel ORDER BY id DESC LIMIT 1";
+$hasil_bendel_terakhir = mysqli_query($conn, $query_bendel_terakhir);
+$nomer_bendel_otomatis = 1;
+if(mysqli_num_rows($hasil_bendel_terakhir) > 0){
+    $baris_terakhir = mysqli_fetch_assoc($hasil_bendel_terakhir);
+    $nomer_bendel_otomatis = (int)$baris_terakhir['no_bendel'] + 1;
+}
+
 $query_terakhir = "SELECT nomor_sampai FROM transaksi ORDER BY id DESC LIMIT 1";
 $result_terakhir = mysqli_query($conn, $query_terakhir);
 $nomor_terakhir = 0;
-
 if (mysqli_num_rows($result_terakhir) > 0) {
     $baris_terakhir = mysqli_fetch_assoc($result_terakhir);
     $nomor_terakhir = (int)$baris_terakhir['nomor_sampai'];
@@ -67,6 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $success = 'Data bendel dan transaksi berhasil ditambahkan!';
 
                 // Reset biar nambah otomatis
+                $nomer_bendel_otomatis = (int)$no_bendel + 1;
                 $nomor_mulai_otomatis = $nomor_sampai + 1;
                 $nomor_sampai_otomatis = $nomor_mulai_otomatis + 49;
             } else {
@@ -123,7 +131,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <div class="mb-4">
                         <label class="block text-gray-700 font-semibold mb-2">No. Bendel *</label>
                         <input type="text" name="no_bendel" required 
-                               class="w-full px-3 py-2 border rounded focus:outline-none focus:border-blue-500">
+                               class="w-full px-3 py-2 border rounded focus:outline-none focus:border-blue-500"
+                               value="<?php echo $nomer_bendel_otomatis?>">
                     </div>
                     
                     <div class="mb-4">
