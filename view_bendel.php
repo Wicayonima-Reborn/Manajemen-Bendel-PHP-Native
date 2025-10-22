@@ -15,7 +15,7 @@ $user_id = $_SESSION['user_id'];
 // Filter dan sorting
 $filter_tipe = isset($_GET['tipe']) ? mysqli_real_escape_string($conn, $_GET['tipe']) : '';
 $filter_tanggal = isset($_GET['tanggal']) ? mysqli_real_escape_string($conn, $_GET['tanggal']) : '';
-$sort_by = isset($_GET['sort']) ? $_GET['sort'] : 'default'; // <-- default tidak tanggal/nomor
+$sort_by = isset($_GET['sort']) ? $_GET['sort'] : 'default';
 
 // Query WHERE
 $where = [];
