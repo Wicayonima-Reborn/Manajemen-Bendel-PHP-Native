@@ -5,8 +5,7 @@ require 'vendor/autoload.php';
 require 'koneksi.php';
 
 // query
-$sql = "
-SELECT 
+$sql = "SELECT 
   b.no_bendel,
   b.tgl_terima,
   kp.nama_kantor AS kantor_penerima,
