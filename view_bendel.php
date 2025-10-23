@@ -17,7 +17,7 @@ $filter_tipe = isset($_GET['tipe']) ? mysqli_real_escape_string($conn, $_GET['ti
 $filter_tanggal = isset($_GET['tanggal']) ? mysqli_real_escape_string($conn, $_GET['tanggal']) : '';
 $sort_by = isset($_GET['sort']) ? $_GET['sort'] : 'default';
 
-// Query WHERE
+// query WHERE
 $where = [];
 if ($role == 'penginput') {
     $where[] = "b.id_user_input = $user_id";
@@ -37,10 +37,10 @@ if ($sort_by == 'tanggal') {
 } elseif ($sort_by == 'nomor') {
     $order_by = "ORDER BY CAST(t.nomor_mulai AS UNSIGNED) DESC";
 } else {
-    $order_by = "ORDER BY b.id DESC"; // default
+    $order_by = "ORDER BY b.id DESC";
 }
 
-// Query final
+// query
 $query = "SELECT b.*, k.nama_kantor, u.nama as nama_input,
 t.tipe_transaksi, t.nama_penyetor, t.nomor_mulai, t.nomor_sampai
 FROM bendel b
@@ -81,40 +81,19 @@ $result_bendel = mysqli_query($conn, $query);
 
             <!-- Filter -->
             <form method="GET" class="mb-6">
-                <!-- button -->
-                <div class="mb-4">
-                    <label class="block text-gray-700 font-semibold mb-2">Filter Tipe Transaksi:</label>
-                    <div class="flex gap-2">
-                        <a href="view_bendel.php?sort=<?php echo $sort_by; ?>&tanggal=<?php echo $filter_tanggal; ?>" 
-                           class="px-4 py-2 rounded font-semibold <?php echo $filter_tipe == '' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'; ?>">
-                            Semua
-                        </a>
-                        <a href="view_bendel.php?tipe=setoran&sort=<?php echo $sort_by; ?>&tanggal=<?php echo $filter_tanggal; ?>" 
-                           class="px-4 py-2 rounded font-semibold <?php echo $filter_tipe == 'setoran' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'; ?>">
-                            Setoran
-                        </a>
-                        <a href="view_bendel.php?tipe=penarikan&sort=<?php echo $sort_by; ?>&tanggal=<?php echo $filter_tanggal; ?>" 
-                           class="px-4 py-2 rounded font-semibold <?php echo $filter_tipe == 'penarikan' ? 'bg-orange-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'; ?>">
-                            Penarikan
-                        </a>
-                    </div>
-                </div>
-
-                <!-- sorting -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb--4">
-                    <div>
+                <!-- Sorting dan buttons -->
+                <div class="flex gap-2 mb-4">
+                    <div class="flex-1">
                         <label class="block text-gray-700 font-semibold mb-2">Urutkan:</label>
                         <select name="sort" class="w-full px-4 py-2 border rounded focus:outline-none focus:border-blue-500" onchange="this.form.submit()">
-                            <option value="tanggal" <?php echo $sort_by == 'tanggal' ? 'selected' : ''; ?>>
-                                Berdasarkan Tanggal
-                            </option>
                             <option value="nomor" <?php echo $sort_by == 'nomor' ? 'selected' : ''; ?>>
                                 Berdasarkan Nomor
                             </option>
+                            <option value="tanggal" <?php echo $sort_by == 'tanggal' ? 'selected' : ''; ?>>
+                                Berdasarkan Tanggal
+                            </option>
                         </select>
                     </div>
-
-                    <!-- Button -->
                     <div class="flex items-end gap-2">
                         <a href="view_bendel.php" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded font-semibold">
                             Reset
@@ -123,6 +102,22 @@ $result_bendel = mysqli_query($conn, $query);
                             Export ke excel
                         </a>
                     </div>
+                </div>
+
+                <!-- tipe transaksi -->
+                <div class="mb-4 flex justify-end gap-2">
+                    <a href="view_bendel.php?sort=<?php echo $sort_by; ?>&tanggal=<?php echo $filter_tanggal; ?>" 
+                       class="px-4 py-2 rounded font-semibold <?php echo $filter_tipe == '' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'; ?>">
+                        Semua
+                    </a>
+                    <a href="view_bendel.php?tipe=setoran&sort=<?php echo $sort_by; ?>&tanggal=<?php echo $filter_tanggal; ?>" 
+                       class="px-4 py-2 rounded font-semibold <?php echo $filter_tipe == 'setoran' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'; ?>">
+                        Setoran
+                    </a>
+                    <a href="view_bendel.php?tipe=penarikan&sort=<?php echo $sort_by; ?>&tanggal=<?php echo $filter_tanggal; ?>" 
+                       class="px-4 py-2 rounded font-semibold <?php echo $filter_tipe == 'penarikan' ? 'bg-orange-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'; ?>">
+                        Penarikan
+                    </a>
                 </div>
             </form>
 
@@ -190,4 +185,4 @@ $result_bendel = mysqli_query($conn, $query);
         </div>
     </div>
 </body>
-</html> 
+</html>
