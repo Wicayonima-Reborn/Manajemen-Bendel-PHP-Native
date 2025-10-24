@@ -6,7 +6,6 @@ require "koneksi.php";
 
 $export_type = $_POST["export_type"] ?? "semua";
 
-
 // Basic query
 $sql = "SELECT
   b.no_bendel,
@@ -20,19 +19,36 @@ $sql = "SELECT
 FROM bendel b
 JOIN transaksi t ON b.id = t.id_bendel
 JOIN kantor kp ON b.id_kantor_penerima = kp.id
-JOIN kantor kk ON t.id_kantor_pengirim = kk.id;
-";
+JOIN kantor kk ON t.id_kantor_pengirim = kk.id";
 
-if($export_type == 'semua'){
-    $tanggal_mulai = $_POST['tanggal_mulai'];
-    $tanggal_selesai = $_POST['tanggal_selesai'] ?? '';
+$filename = "";
+// filter by date
+switch ($export_type) {
+    case "tanggal":
+        $tanggal_mulai = $_POST["tanggal_mulai"] ?? "";
+        $tanggal_selesai = $_POST["tanggal_selesai"] ?? "";
 
-    if (!empty($tanggal_mulai) && !empty($tanggal_selesai)) {
-        $sql .= " WHERE b.tgl_terima BETWEEN '$tanggal_mulai' AND '$tanggal_selesai'";
-    }
+        if (!empty($tanggal_mulai) && !empty($tanggal_selesai)) {
+            $sql .= " WHERE b.tgl_terima BETWEEN '$tanggal_mulai' AND '$tanggal_selesai'";
+            $filename = sprintf(
+                "laporan_bendel_%s_sampai_%s.xlsx",
+                date("d-m-Y", strtotime($tanggal_mulai)),
+                date("d-m-Y", strtotime($tanggal_selesai)),
+            );
+        } else {
+            $filename = "laporan_bendel_" . date("d-m-Y") . ".xlsx";
+        }
+        break;
+    default:
+        // kata semua and any other case
+        $filename = "semua_laporan_bendel_" . date("d-m-Y") . ".xlsx";
+        break;
 }
 
+$sql .= ";";
+
 $result = $conn->query($sql);
+
 // Buat spreadsheet baru
 $spreadsheet = new Spreadsheet();
 $sheet = $spreadsheet->getActiveSheet();
@@ -56,21 +72,20 @@ $sheet->getStyle("A1:H1")->getFont()->setBold(true);
 // isi data
 $row = 2;
 while ($r = $result->fetch_assoc()) {
-    $sheet->setCellValue("A" . $row, $r["no_bendel"]);
-    $sheet->setCellValue("B" . $row, $r["tgl_terima"]);
-    $sheet->setCellValue("C" . $row, $r["kantor_penerima"]);
-    $sheet->setCellValue("D" . $row, $r["tipe_transaksi"]);
-    $sheet->setCellValue("E" . $row, $r["nomor_mulai"]);
-    $sheet->setCellValue("F" . $row, $r["nomor_sampai"]);
-    $sheet->setCellValue("G" . $row, $r["nama_penyetor"]);
-    $sheet->setCellValue("H" . $row, $r["kantor_pengirim"]);
+    $sheet->setCellValue("A{$row}", $r["no_bendel"]);
+    $sheet->setCellValue("B{$row}", $r["tgl_terima"]);
+    $sheet->setCellValue("C{$row}", $r["kantor_penerima"]);
+    $sheet->setCellValue("D{$row}", $r["tipe_transaksi"]);
+    $sheet->setCellValue("E{$row}", $r["nomor_mulai"]);
+    $sheet->setCellValue("F{$row}", $r["nomor_sampai"]);
+    $sheet->setCellValue("G{$row}", $r["nama_penyetor"]);
+    $sheet->setCellValue("H{$row}", $r["kantor_pengirim"]);
     $row++;
 }
-// Auto-sizekolom
+// Autosizekolom
 foreach (range("A", "H") as $col) {
     $sheet->getColumnDimension($col)->setAutoSize(true);
 }
-$filename = "laporan_bendel_" . date("Y-m-d") . ".xlsx";
 
 // Output ke browser auto ke download
 header(
@@ -80,4 +95,3 @@ header("Content-Disposition: attachment; filename=\"$filename\"");
 $writer = new Xlsx($spreadsheet);
 $writer->save("php://output");
 exit();
-?>

@@ -266,15 +266,12 @@ $result_bendel = mysqli_query($conn, $query);
         const closeModalBtn = document.getElementById('closeModalBtn');
         const dateRange = document.getElementById('dateRange');
         const exportTypeRadios = document.querySelectorAll('input[name="export_type"]');
-
         exportBtn.addEventListener('click', () => {
             exportModal.classList.remove('hidden');
         });
-
         closeModalBtn.addEventListener('click', () => {
             exportModal.classList.add('hidden');
         });
-
         exportTypeRadios.forEach(radio => {
             radio.addEventListener('change', () => {
                 if (radio.value === 'tanggal') {
