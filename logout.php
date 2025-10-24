@@ -16,4 +16,3 @@ session_destroy();
 // halaman login
 header('Location: index.php');
 exit;
-?>
