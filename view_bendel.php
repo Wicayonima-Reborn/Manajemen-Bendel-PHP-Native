@@ -109,9 +109,9 @@ $result_bendel = mysqli_query($conn, $query);
                         <a href="view_bendel.php" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded font-semibold">
                             Reset
                         </a>
-                        <a href="export.php" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded font-semibold">
-                            Export ke excel
-                        </a>
+                        <button id="exportBtn" type="button" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded font-semibold">
+                            Download
+                        </button>
                     </div>
                 </div>
 
@@ -226,5 +226,64 @@ $result_bendel = mysqli_query($conn, $query);
             <?php endif; ?>
         </div>
     </div>
+    <div id="exportModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-1/3">
+            <h3 class="text-lg font-bold mb-4">Export Data Bendel</h3>
+            <form action="export.php" method="POST">
+                <div class="mb-4">
+                    <label class="block text-gray-700">
+                        <input type="radio" name="export_type" value="semua" checked class="mr-2">
+                        Semua Data
+                    </label>
+                    <label class="block text-gray-700">
+                        <input type="radio" name="export_type" value="tanggal" class="mr-2">
+                        Berdasarkan Tanggal
+                    </label>
+                </div>
+                <div id="dateRange" class="hidden mb-4">
+                    <div class="flex gap-4">
+                        <div>
+                            <label for="tanggal_mulai" class="block text-sm font-medium text-gray-700">Tanggal Mulai</label>
+                            <input type="date" name="tanggal_mulai" id="tanggal_mulai" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label for="tanggal_selesai" class="block text-sm font-medium text-gray-700">Tanggal Selesai</label>
+                            <input type="date" name="tanggal_selesai" id="tanggal_selesai" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-4">
+                    <button type="button" id="closeModalBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded">Batal</button>
+                    <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">Export</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const exportBtn = document.getElementById('exportBtn');
+        const exportModal = document.getElementById('exportModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const dateRange = document.getElementById('dateRange');
+        const exportTypeRadios = document.querySelectorAll('input[name="export_type"]');
+
+        exportBtn.addEventListener('click', () => {
+            exportModal.classList.remove('hidden');
+        });
+
+        closeModalBtn.addEventListener('click', () => {
+            exportModal.classList.add('hidden');
+        });
+
+        exportTypeRadios.forEach(radio => {
+            radio.addEventListener('change', () => {
+                if (radio.value === 'tanggal') {
+                    dateRange.classList.remove('hidden');
+                } else {
+                    dateRange.classList.add('hidden');
+                }
+            });
+        });
+    </script>
 </body>
 </html>
