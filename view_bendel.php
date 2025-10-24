@@ -1,6 +1,5 @@
 <?php
 session_start();
-
 // Cek login
 if (!isset($_SESSION["user_id"])) {
     header("Location: index.php");
@@ -119,21 +118,21 @@ $result_bendel = mysqli_query($conn, $query);
                     <a href="view_bendel.php?sort=<?php echo $sort_by; ?>&tanggal=<?php echo $filter_tanggal; ?>"
                        class="px-4 py-2 rounded font-semibold <?php echo $filter_tipe ==
                        ""
-                           ? "bg-blue-600 text-white"
+                           ? "bg-purple-600 text-white"
                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"; ?>">
                         Semua
                     </a>
                     <a href="view_bendel.php?tipe=setoran&sort=<?php echo $sort_by; ?>&tanggal=<?php echo $filter_tanggal; ?>"
                        class="px-4 py-2 rounded font-semibold <?php echo $filter_tipe ==
                        "setoran"
-                           ? "bg-green-600 text-white"
+                           ? "bg-blue-600 text-white"
                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"; ?>">
                         Setoran
                     </a>
                     <a href="view_bendel.php?tipe=penarikan&sort=<?php echo $sort_by; ?>&tanggal=<?php echo $filter_tanggal; ?>"
                        class="px-4 py-2 rounded font-semibold <?php echo $filter_tipe ==
                        "penarikan"
-                           ? "bg-orange-600 text-white"
+                           ? "bg-red-600 text-white"
                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"; ?>">
                         Penarikan
                     </a>
@@ -177,9 +176,7 @@ $result_bendel = mysqli_query($conn, $query);
                             <td class="px-4 py-3 text-sm">
                                 <?php echo htmlspecialchars(
                                     $row["nomor_mulai"],
-                                ); ?> - <?php echo htmlspecialchars(
-     $row["nomor_sampai"],
- ); ?>
+                                ); ?> - <?php echo htmlspecialchars($row["nomor_sampai"],); ?>
                             </td>
                             <td class="px-4 py-3"><?php echo htmlspecialchars(
                                 $row["nama_penyetor"],
