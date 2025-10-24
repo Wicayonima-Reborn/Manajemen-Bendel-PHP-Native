@@ -84,7 +84,6 @@ $result_bendel = mysqli_query($conn, $query);
                     ? "Semua Data Bendel"
                     : "Data Bendel Saya"; ?>
             </h2>
-
             <!-- Filter -->
             <form method="GET" class="mb-6">
                 <!-- Sorting dan buttons -->

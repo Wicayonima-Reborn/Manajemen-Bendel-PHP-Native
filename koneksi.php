@@ -16,4 +16,3 @@ if (!$conn) {
 
 // diset charset UTF-8
 mysqli_set_charset($conn, "utf8");
-?>
