@@ -14,33 +14,42 @@ $role = $_SESSION["role"];
 $nama = $_SESSION["nama"];
 
 // Ambil statistik
-if ($role == "penginput") {
-    // Penginput only see data sendiri
-    $query_count = "SELECT COUNT(*) as total FROM bendel WHERE id_user_input = $user_id";
-} else {
-    // Pengawas lihat all data
-    $query_count = "SELECT COUNT(*) as total FROM bendel";
+switch ($role) {
+    case "penginput":
+        $query_count = "SELECT COUNT(*) AS total FROM bendel
+                        WHERE id_user_input = $user_id";
+        break;
+
+    case "pengawas":
+    default:    // else ini
+        $query_count = "SELECT COUNT(*) AS total FROM bendel";
+        break;
 }
 
 $result_count = mysqli_query($conn, $query_count);
 $total_bendel = mysqli_fetch_assoc($result_count)["total"];
 
 // Pick data bendel
-if ($role == "penginput") {
-    $query = "SELECT b.*, k.nama_kantor, u.nama as nama_input
-              FROM bendel b
-              LEFT JOIN kantor k ON b.id_kantor_penerima = k.id
-              LEFT JOIN users u ON b.id_user_input = u.id
-              WHERE b.id_user_input = $user_id
-              ORDER BY b.created_at DESC
-              LIMIT 10";
-} else {
-    $query = "SELECT b.*, k.nama_kantor, u.nama as nama_input
-              FROM bendel b
-              LEFT JOIN kantor k ON b.id_kantor_penerima = k.id
-              LEFT JOIN users u ON b.id_user_input = u.id
-              ORDER BY b.created_at DESC
-              LIMIT 10";
+switch ($role) {
+    case "penginput":
+        $query = "SELECT b.*, k.nama_kantor, u.nama AS nama_input
+                  FROM bendel b
+                  LEFT JOIN kantor k ON b.id_kantor_penerima = k.id
+                  LEFT JOIN users u ON b.id_user_input = u.id
+                  WHERE b.id_user_input = $user_id
+                  ORDER BY b.created_at DESC
+                  LIMIT 10";
+        break;
+
+    case "pengawas":
+    default:
+        $query = "SELECT b.*, k.nama_kantor, u.nama AS nama_input
+                  FROM bendel b
+                  LEFT JOIN kantor k ON b.id_kantor_penerima = k.id
+                  LEFT JOIN users u ON b.id_user_input = u.id
+                  ORDER BY b.created_at DESC
+                  LIMIT 10";
+        break;
 }
 
 $result_bendel = mysqli_query($conn, $query);
