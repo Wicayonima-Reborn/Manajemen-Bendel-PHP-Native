@@ -1,31 +1,36 @@
 <?php
-// Path .env
 $envPath = __DIR__ . '/.env';
-
-// Cek apakah file .env ada
 if (!file_exists($envPath)) {
-    die("Config error: file .env tidak ditemukan");
+    exit("Config error");
 }
-// Load .env
+
 $env = parse_ini_file($envPath);
-
-if (!$env) {
-    die("Config error: gagal membaca .env");
-}
-
-// Ambil env
 $db_host = $env['DB_HOST'] ?? 'localhost';
 $db_user = $env['DB_USER'] ?? '';
 $db_pass = $env['DB_PASS'] ?? '';
 $db_name = $env['DB_NAME'] ?? '';
 
-// Koneksi
-$conn = mysqli_connect($db_host, $db_user, $db_pass, $db_name);
+$dsn = "mysql:host={$db_host};dbname={$db_name};charset=utf8mb4";
 
-// Cek koneksi
-if (!$conn) {
-    die("Koneksi gagal: " . mysqli_connect_error());
+try {
+    $pdo = new PDO($dsn, $db_user, $db_pass, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    ]);
+} catch (PDOException $e) {
+    error_log("DB Error: " . $e->getMessage());
+    exit("Internal server error");
 }
 
-// Charset
-mysqli_set_charset($conn, "utf8mb4");
+class DB {
+    private $pdo;
+    public function __construct(PDO $pdo) {
+        $this->pdo = $pdo;
+    }
+    public function query(string $sql, array $params = []) {
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt;
+    }
+}
+$db = new DB($pdo);

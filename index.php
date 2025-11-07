@@ -1,47 +1,46 @@
 <?php
 session_start();
 
-// sudah login, redirect ke dashboard
+// kalau sudah login → ke dashboard
 if (isset($_SESSION["user_id"])) {
     header("Location: dashboard.php");
     exit();
 }
+
 require_once "koneksi.php";
 
 $error = "";
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = trim($_POST["username"]);
-    $password = trim($_POST["password"]);
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
-    // Statement untuk mencegah SQL Injection
-    $stmt = mysqli_prepare($conn, "SELECT * FROM users WHERE username = ?");
-    mysqli_stmt_bind_param($stmt, "s", $username);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
+    $username = trim($_POST["username"] ?? "");
+    $password = trim($_POST["password"] ?? "");
 
-    if ($result && mysqli_num_rows($result) == 1) {
-        $user = mysqli_fetch_assoc($result);
+    // querynya pakai wrapper
+    $stmt = $db->query(
+        "SELECT id, nama, username, password, role 
+         FROM users 
+         WHERE username = ? LIMIT 1",
+        [$username]
+    );
 
-        if (password_verify($password, $user["password"])) {
-            // Login berhasil regenerate session ID
-            session_regenerate_id(true);
+    $user = $stmt->fetch();
 
-            $_SESSION["user_id"] = $user["id"];
-            $_SESSION["nama"] = $user["nama"];
-            $_SESSION["username"] = $user["username"];
-            $_SESSION["role"] = $user["role"];
+    if ($user && password_verify($password, $user["password"])) {
 
-            header("Location: dashboard.php");
-            exit();
-        } else {
-            $error = "Username atau password salah!";
-        }
+        // mengamankan session
+        session_regenerate_id(true);
+
+        $_SESSION["user_id"]  = $user["id"];
+        $_SESSION["nama"]     = $user["nama"];
+        $_SESSION["username"] = $user["username"];
+        $_SESSION["role"]     = $user["role"];
+
+        header("Location: dashboard.php");
+        exit();
     } else {
         $error = "Username atau password salah!";
     }
-
-    mysqli_stmt_close($stmt);
 }
 ?>
 <!DOCTYPE html>

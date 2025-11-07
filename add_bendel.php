@@ -1,88 +1,104 @@
 <?php
 session_start();
 
-// Cek login dan role
-if (!isset($_SESSION["user_id"]) || $_SESSION["role"] != "penginput") {
+// Cek login and role
+if (!isset($_SESSION["user_id"]) || $_SESSION["role"] !== "penginput") {
     header("Location: index.php");
     exit();
 }
-
 require_once "koneksi.php";
 
 $success = "";
-$error = "";
+$error   = "";
 
-$nomor_mulai = +1;
-$nomor_akhir = +49;
+// =========================
+// Jikok list kantor
+// =========================
+$stmt = $db->query("SELECT id, nama_kantor FROM kantor ORDER BY nama_kantor");
+$kantor_list = $stmt->fetchAll();
 
-$query_kantor = "SELECT * FROM kantor ORDER BY nama_kantor";
-$result_kantor = mysqli_query($conn, $query_kantor);
+// =========================
+// Jikok nomor bendel terakhir
+// =========================
+$stmt = $db->query("SELECT no_bendel FROM bendel ORDER BY id DESC LIMIT 1");
+$last_bendel = $stmt->fetch();
+$nomer_bendel_otomatis = $last_bendel ? ((int)$last_bendel["no_bendel"] + 1) : 1;
 
-$query_bendel_terakhir =
-    "SELECT no_bendel FROM bendel ORDER BY id DESC LIMIT 1";
-$hasil_bendel_terakhir = mysqli_query($conn, $query_bendel_terakhir);
-$nomer_bendel_otomatis = 1;
-if (mysqli_num_rows($hasil_bendel_terakhir) > 0) {
-    $baris_terakhir = mysqli_fetch_assoc($hasil_bendel_terakhir);
-    $nomer_bendel_otomatis = (int) $baris_terakhir["no_bendel"] + 1;
-}
-
-$query_terakhir = "SELECT nomor_sampai FROM transaksi ORDER BY id DESC LIMIT 1";
-$result_terakhir = mysqli_query($conn, $query_terakhir);
-$nomor_terakhir = 0;
-if (mysqli_num_rows($result_terakhir) > 0) {
-    $baris_terakhir = mysqli_fetch_assoc($result_terakhir);
-    $nomor_terakhir = (int) $baris_terakhir["nomor_sampai"];
-}
-
-$nomor_mulai_otomatis = $nomor_terakhir + 1;
+// =========================
+// Jikok nomor transaksi terakhir
+// =========================
+$stmt = $db->query("SELECT nomor_sampai FROM transaksi ORDER BY id DESC LIMIT 1");
+$last_transaksi = $stmt->fetch();
+$nomor_mulai_otomatis = $last_transaksi ? ((int)$last_transaksi["nomor_sampai"] + 1) : 1;
 $nomor_sampai_otomatis = $nomor_mulai_otomatis + 49;
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $no_bendel = mysqli_real_escape_string($conn, $_POST["no_bendel"]);
-    $tgl_terima = mysqli_real_escape_string($conn, $_POST["tgl_terima"]);
-    $id_kantor_penerima = (int) $_POST["id_kantor_penerima"];
-    $id_user_input = $_SESSION["user_id"];
+// helper untuk old value
+function old($key, $default = "") {
+    return htmlspecialchars($_POST[$key] ?? $default);
+}
 
-    // Data transaksi
-    $tipe_transaksi = $_POST["tipe_transaksi"];
-    // $nomor_mulai = mysqli_real_escape_string($conn, $_POST['nomor_mulai']);
-    // $nomor_sampai = mysqli_real_escape_string($conn, $_POST['nomor_sampai']);
-    $nomor_mulai = (int) $_POST["nomor_mulai"];
-    $nomor_sampai = (int) $_POST["nomor_sampai"];
-    $nama_penyetor = mysqli_real_escape_string($conn, $_POST["nama_penyetor"]);
-    $id_kantor_pengirim = (int) $_POST["id_kantor_pengirim"];
+// =========================
+// Handle POST
+// =========================
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
-    // Cek duplikasi no_bendel
-    $check_query = "SELECT id FROM bendel WHERE no_bendel = '$no_bendel'";
-    $check_result = mysqli_query($conn, $check_query);
+    $no_bendel         = trim($_POST["no_bendel"] ?? "");
+    $tgl_terima        = trim($_POST["tgl_terima"] ?? date("Y-m-d"));
+    $id_kantor_penerima = (int)($_POST["id_kantor_penerima"] ?? 0);
+    $id_user_input     = $_SESSION["user_id"];
 
-    if (mysqli_num_rows($check_result) > 0) {
-        $error = "Nomor bendel sudah ada!";
+    $tipe_transaksi     = trim($_POST["tipe_transaksi"] ?? "");
+    $nomor_mulai        = (int)($_POST["nomor_mulai"] ?? 0);
+    $nomor_sampai       = (int)($_POST["nomor_sampai"] ?? 0);
+    $nama_penyetor      = trim($_POST["nama_penyetor"] ?? "");
+    $id_kantor_pengirim = (int)($_POST["id_kantor_pengirim"] ?? 0);
+
+    // Validasi yang minimal aja
+    if ($no_bendel === "" || $tgl_terima === "" || $id_kantor_penerima <= 0 || $tipe_transaksi === "" || $nomor_mulai <= 0 || $nomor_sampai <= 0 || $nama_penyetor === "" || $id_kantor_pengirim <= 0) {
+        $error = "Semua field wajib diisi dengan benar.";
     } else {
-        // Insert bendel
-        $query_bendel = "INSERT INTO bendel (no_bendel, tgl_terima, id_kantor_penerima, id_user_input)
-                        VALUES ('$no_bendel', '$tgl_terima', $id_kantor_penerima, $id_user_input)";
+        // ngeCek duplikasi bendel
+        $stmt = $db->query("SELECT id FROM bendel WHERE no_bendel = ?", [$no_bendel]);
+        $exists = $stmt->fetch();
 
-        if (mysqli_query($conn, $query_bendel)) {
-            $id_bendel = mysqli_insert_id($conn);
-
-            // Insert transaksi
-            $query_transaksi = "INSERT INTO transaksi (id_bendel, tipe_transaksi, nomor_mulai, nomor_sampai, nama_penyetor, id_kantor_pengirim)
-                               VALUES ($id_bendel, '$tipe_transaksi', '$nomor_mulai', '$nomor_sampai', '$nama_penyetor', $id_kantor_pengirim)";
-
-            if (mysqli_query($conn, $query_transaksi)) {
-                $success = "Data bendel dan transaksi berhasil ditambahkan!";
-
-                // Reset biar nambah otomatis
-                $nomer_bendel_otomatis = (int) $no_bendel + 1;
-                $nomor_mulai_otomatis = $nomor_sampai + 1;
-                $nomor_sampai_otomatis = $nomor_mulai_otomatis + 49;
-            } else {
-                $error = "Gagal menambahkan transaksi: " . mysqli_error($conn);
-            }
+        if ($exists) {
+            $error = "Nomor bendel udah ada ya kak!";
         } else {
-            $error = "Gagal menambahkan bendel: " . mysqli_error($conn);
+
+            try {
+                // Transactionnys lah atomic
+                $pdo->beginTransaction();
+
+                // Insert ke bendel
+                $db->query(
+                    "INSERT INTO bendel (no_bendel, tgl_terima, id_kantor_penerima, id_user_input)
+                     VALUES (?, ?, ?, ?)",
+                    [$no_bendel, $tgl_terima, $id_kantor_penerima, $id_user_input]
+                );
+
+                $id_bendel = $pdo->lastInsertId();
+
+                // Insert transaksi
+                $db->query(
+                    "INSERT INTO transaksi (id_bendel, tipe_transaksi, nomor_mulai, nomor_sampai, nama_penyetor, id_kantor_pengirim)
+                     VALUES (?, ?, ?, ?, ?, ?)",
+                    [$id_bendel, $tipe_transaksi, $nomor_mulai, $nomor_sampai, $nama_penyetor, $id_kantor_pengirim]
+                );
+
+                $pdo->commit();
+                $success = "Data bendel + transaksi sukses ditambah! 🔥";
+
+                // reset auto valuesnya
+                $nomer_bendel_otomatis = (int)$no_bendel + 1;
+                $nomor_mulai_otomatis  = $nomor_sampai + 1;
+                $nomor_sampai_otomatis = $nomor_mulai_otomatis + 49;
+
+                // kosongkan POST supaya form kosong setelah sukses
+                $_POST = [];
+            } catch (Exception $e) {
+                $pdo->rollBack();
+                $error = "Gagal menambahkan data!";
+            }
         }
     }
 }
@@ -102,9 +118,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <h1 class="text-xl font-bold">Aplikasi Manajemen Bendel</h1>
             <div class="flex items-center gap-4">
                 <a href="dashboard.php" class="hover:underline">Dashboard</a>
-                <span class="text-sm"><?php echo htmlspecialchars(
-                    $_SESSION["nama"],
-                ); ?></span>
+                <span class="text-sm"><?php echo htmlspecialchars($_SESSION["nama"]); ?></span>
                 <a href="logout.php" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded text-sm">Logout</a>
             </div>
         </div>
@@ -116,13 +130,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             <?php if ($success): ?>
             <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-                <?php echo $success; ?>
+                <?php echo htmlspecialchars($success); ?>
             </div>
             <?php endif; ?>
 
             <?php if ($error): ?>
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                <?php echo $error; ?>
+                <?php echo htmlspecialchars($error); ?>
             </div>
             <?php endif; ?>
 
@@ -135,13 +149,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <label class="block text-gray-700 font-semibold mb-2">No. Bendel *</label>
                         <input type="text" name="no_bendel" required
                                class="w-full px-3 py-2 border rounded focus:outline-none focus:border-blue-500"
-                               value="<?php echo $nomer_bendel_otomatis; ?>">
+                               value="<?php echo old('no_bendel', $nomer_bendel_otomatis); ?>">
                     </div>
 
                     <div class="mb-4">
                         <label class="block text-gray-700 font-semibold mb-2">Tanggal Terima *</label>
                         <input type="date" name="tgl_terima" required
-                               value="<?php echo date("Y-m-d"); ?>"
+                               value="<?php echo old('tgl_terima', date("Y-m-d")); ?>"
                                class="w-full px-3 py-2 border rounded focus:outline-none focus:border-blue-500">
                     </div>
 
@@ -149,19 +163,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <label class="block text-gray-700 font-semibold mb-2">Kantor Penerima *</label>
                         <select name="id_kantor_penerima" required
                                 class="w-full px-3 py-2 border rounded focus:outline-none focus:border-blue-500">
-                            <option value="">  Pilih Kantor  </option>
-                            <?php
-                            mysqli_data_seek($result_kantor, 0);
-                            while (
-                                $kantor = mysqli_fetch_assoc($result_kantor)
-                            ): ?>
-                            <option value="<?php echo $kantor["id"]; ?>">
-                                <?php echo htmlspecialchars(
-                                    $kantor["nama_kantor"],
-                                ); ?>
+                            <option value="">Pilih Kantor</option>
+                            <?php foreach ($kantor_list as $kantor): ?>
+                            <option value="<?php echo $kantor['id']; ?>"
+                                <?php echo ((int)($_POST['id_kantor_penerima'] ?? 0) === (int)$kantor['id']) ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($kantor['nama_kantor']); ?>
                             </option>
-                            <?php endwhile;
-                            ?>
+                            <?php endforeach; ?>
                         </select>
                     </div>
                 </div>
@@ -174,9 +182,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <label class="block text-gray-700 font-semibold mb-2">Tipe Transaksi *</label>
                         <select name="tipe_transaksi" required
                                 class="w-full px-3 py-2 border rounded focus:outline-none focus:border-blue-500">
-                            <option value="">  Pilih Tipe  </option>
-                            <option value="setoran">Setoran</option>
-                            <option value="penarikan">Penarikan</option>
+                            <option value="">Pilih Tipe</option>
+                            <option value="setoran" <?php echo (($_POST['tipe_transaksi'] ?? '') === 'setoran') ? 'selected' : ''; ?>>Setoran</option>
+                            <option value="penarikan" <?php echo (($_POST['tipe_transaksi'] ?? '') === 'penarikan') ? 'selected' : ''; ?>>Penarikan</option>
                         </select>
                     </div>
 
@@ -184,7 +192,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <div>
                             <label class="block text-gray-700 font-semibold mb-2">Nomor Mulai *</label>
                             <input type="number" name="nomor_mulai" required
-                                   value="<?php echo $nomor_mulai_otomatis; ?>"
+                                   value="<?php echo old('nomor_mulai', $nomor_mulai_otomatis); ?>"
                                    id="nomor_mulai"
                                    class="w-full px-3 py-2 border rounded focus:outline-none focus:border-blue-500">
                             <p class="text-xs text-gray-500 mt-1">Auto: <?php echo $nomor_mulai_otomatis; ?> (bisa diubah manual)</p>
@@ -193,7 +201,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <div>
                             <label class="block text-gray-700 font-semibold mb-2">Nomor Sampai *</label>
                             <input type="number" name="nomor_sampai" required
-                                   value="<?php echo $nomor_sampai_otomatis; ?>"
+                                   value="<?php echo old('nomor_sampai', $nomor_sampai_otomatis); ?>"
                                    id="nomor_sampai"
                                    class="w-full px-3 py-2 border rounded focus:outline-none focus:border-blue-500">
                             <p class="text-xs text-gray-500 mt-1">Auto: <?php echo $nomor_sampai_otomatis; ?> (pattern +50)</p>
@@ -203,6 +211,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <div class="mb-4">
                         <label class="block text-gray-700 font-semibold mb-2">Nama Penyetor *</label>
                         <input type="text" name="nama_penyetor" required
+                               value="<?php echo old('nama_penyetor'); ?>"
                                class="w-full px-3 py-2 border rounded focus:outline-none focus:border-blue-500">
                     </div>
 
@@ -210,19 +219,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <label class="block text-gray-700 font-semibold mb-2">Kantor Pengirim *</label>
                         <select name="id_kantor_pengirim" required
                                 class="w-full px-3 py-2 border rounded focus:outline-none focus:border-blue-500">
-                            <option value="">  Pilih Kantor  </option>
-                            <?php
-                            mysqli_data_seek($result_kantor, 0);
-                            while (
-                                $kantor = mysqli_fetch_assoc($result_kantor)
-                            ): ?>
-                            <option value="<?php echo $kantor["id"]; ?>">
-                                <?php echo htmlspecialchars(
-                                    $kantor["nama_kantor"],
-                                ); ?>
+                            <option value="">Pilih Kantor</option>
+                            <?php foreach ($kantor_list as $kantor): ?>
+                            <option value="<?php echo $kantor['id']; ?>"
+                                <?php echo ((int)($_POST['id_kantor_pengirim'] ?? 0) === (int)$kantor['id']) ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($kantor['nama_kantor']); ?>
                             </option>
-                            <?php endwhile;
-                            ?>
+                            <?php endforeach; ?>
                         </select>
                     </div>
                 </div>
