@@ -54,62 +54,77 @@ $result_bendel = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <link href="./output.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100">
+
+    <!-- NAVBAR -->
     <nav class="bg-blue-600 text-white p-4 shadow-lg">
-        <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold">Aplikasi Manajemen Bendel</h1>
-            <div class="flex items-center gap-4">
-                <span class="text-sm">Halo, <strong><?= htmlspecialchars($nama) ?></strong> (<?= ucfirst($role) ?>)</span>
-                <a href="logout.php" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded text-sm">Logout</a>
+        <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-3">
+            <h1 class="text-lg md:text-xl font-bold">Aplikasi Manajemen Bendel</h1>
+
+            <div class="flex items-center gap-3 text-sm md:text-base">
+                <span>Halo, <strong><?= htmlspecialchars($nama) ?></strong> (<?= ucfirst($role) ?>)</span>
+                <a href="logout.php" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded">Logout</a>
             </div>
         </div>
     </nav>
 
-    <div class="container mx-auto p-6">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <div class="bg-white p-6 rounded-lg shadow">
+    <div class="max-w-7xl mx-auto p-4 md:p-6">
+
+        <!-- STATISTIC CARDS -->
+        <div class="w-full max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6">
+
+            <div class="bg-white p-4 md:p-6 rounded-xl shadow border border-gray-100">
                 <h3 class="text-gray-600 text-sm font-semibold">Total Bendel</h3>
-                <p class="text-3xl font-bold text-blue-600 mt-2"><?= $total_bendel ?></p>
+                <p class="text-3xl md:text-4xl font-bold text-blue-600 mt-2"><?= $total_bendel ?></p>
             </div>
 
-            <div class="bg-white p-6 rounded-lg shadow">
+            <div class="bg-white p-4 md:p-6 rounded-xl shadow border border-gray-100">
                 <h3 class="text-gray-600 text-sm font-semibold">Role Anda</h3>
-                <p class="text-2xl font-bold text-green-600 mt-2"><?= ucfirst($role) ?></p>
+                <p class="text-2xl md:text-3xl font-bold text-green-600 mt-2"><?= ucfirst($role) ?></p>
+            </div>
+            <div class="bg-white p-4 md:p-6 rounded-xl shadow border border-gray-100">
+                <h3 class="text-gray-600 text-sm font-semibold">Status</h3>
+                <p class="text-2xl md:text-3xl font-bold text-purple-600 mt-2">Aktif</p>
             </div>
 
-            <div class="bg-white p-6 rounded-lg shadow">
-                <h3 class="text-gray-600 text-sm font-semibold">Status</h3>
-                <p class="text-2xl font-bold text-purple-600 mt-2">Aktif</p>
-            </div>
         </div>
 
+        <!-- MENU -->
         <div class="bg-white p-6 rounded-lg shadow mb-6">
             <h2 class="text-xl font-bold mb-4">Menu</h2>
-            <div class="flex gap-3">
+
+            <div class="flex flex-wrap gap-3">
                 <?php if ($role === "penginput"): ?>
-                <a href="add_bendel.php" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded font-semibold">Tambah Bendel</a>
+                <a href="add_bendel.php" class="bg-blue-500 hover:bg-blue-600 text-white px-5 py-3 rounded font-semibold w-full sm:w-auto text-center">
+                    Tambah Bendel
+                </a>
                 <?php endif; ?>
 
-                <a href="view_bendel.php" class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded font-semibold">Lihat Semua Bendel</a>
+                <a href="view_bendel.php" class="bg-green-500 hover:bg-green-600 text-white px-5 py-3 rounded font-semibold w-full sm:w-auto text-center">
+                    Lihat Semua Bendel
+                </a>
             </div>
         </div>
-
+        <!-- DATA BENDEL TERBARU -->
         <div class="bg-white p-6 rounded-lg shadow">
+
             <h2 class="text-xl font-bold mb-4">Data Bendel Terbaru</h2>
 
             <?php if (count($result_bendel) > 0): ?>
+
             <div class="overflow-x-auto">
-                <table class="w-full">
+                <table class="w-full min-w-max text-sm md:text-base">
                     <thead class="bg-gray-200">
                         <tr>
-                            <th class="px-4 py-2 text-left">No. Bendel</th>
-                            <th class="px-4 py-2 text-left">Tanggal Terima</th>
-                            <th class="px-4 py-2 text-left">Kantor Penerima</th>
+                            <th class="px-4 py-3 text-left">No. Bendel</th>
+                            <th class="px-4 py-3 text-left">Tanggal Terima</th>
+                            <th class="px-4 py-3 text-left">Kantor Penerima</th>
                             <?php if ($role === "pengawas"): ?>
-                            <th class="px-4 py-2 text-left">Diinput Oleh</th>
+                            <th class="px-4 py-3 text-left">Diinput Oleh</th>
                             <?php endif; ?>
-                            <th class="px-4 py-2 text-left">Dibuat</th>
+                            <th class="px-4 py-3 text-left">Dibuat</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         <?php foreach ($result_bendel as $row): ?>
                         <tr class="border-b hover:bg-gray-50">
@@ -130,5 +145,6 @@ $result_bendel = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <?php endif; ?>
         </div>
     </div>
+
 </body>
 </html>
