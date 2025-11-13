@@ -10,7 +10,7 @@ if (isset($_COOKIE[session_name()])) {
 }
 
 // destroy session
-session_destroy();  
+session_destroy();
 
 // halaman login
 header('Location: index.php');

@@ -41,12 +41,12 @@ function old($key, $default = "") {
 // Handle POST
 // =========================
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-
+    // yang bendel
     $no_bendel         = trim($_POST["no_bendel"] ?? "");
     $tgl_terima        = trim($_POST["tgl_terima"] ?? date("Y-m-d"));
     $id_kantor_penerima = (int)($_POST["id_kantor_penerima"] ?? 0);
     $id_user_input     = $_SESSION["user_id"];
-
+    // yang transaksi
     $tipe_transaksi     = trim($_POST["tipe_transaksi"] ?? "");
     $nomor_mulai        = (int)($_POST["nomor_mulai"] ?? 0);
     $nomor_sampai       = (int)($_POST["nomor_sampai"] ?? 0);
